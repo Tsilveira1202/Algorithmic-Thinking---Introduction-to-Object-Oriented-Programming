@@ -39,3 +39,11 @@ Thumbs.db
 
 # Output temporary files
 orcamento.csv
+
+# Documentos do trabalho (não enviar para o GitHub)
+*.pdf
+REQUISITOS.md
+fluxograma_e_logica.md
+roteiro_video.md
+static/diagrama_classes_uml.png
+static/fluxograma_aplicacao.png
