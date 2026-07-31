@@ -13,6 +13,11 @@ from models.imovel import Imovel
 from models.contrato import Contrato
 
 
+def formatar_moeda(valor: float) -> str:
+    """Formata valor numérico para padrão monetário brasileiro (ex: R$ 1.200,00)."""
+    return f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+
 class Orcamento:
     """
     Gera o orçamento completo de aluguel mensal.
@@ -68,19 +73,32 @@ class Orcamento:
 
     def gerar_parcelas(self) -> list:
         """
-        Gera a lista de 12 parcelas mensais do orçamento.
+        Gera a lista de 12 parcelas mensais do orçamento,
+        incluindo a projeção do contrato e total acumulado.
 
         Retorna:
-            list: Lista de dicionários com mês e valor do aluguel.
+            list: Lista de dicionários com mês, aluguel, parcela do contrato e total.
         """
         aluguel = self.valor_aluguel_mensal()
+        num_parcelas_contrato = self._contrato.parcelas
+        valor_parcela_contrato = self._contrato.calcular_parcela()
+
         parcelas = []
+        acumulado = 0.0
 
         for mes in range(1, self.MESES_ORCAMENTO + 1):
+            # Parcela do contrato é devida apenas até o número de parcelas escolhido (1x a 5x)
+            parcela_contrato = valor_parcela_contrato if mes <= num_parcelas_contrato else 0.0
+            total_mes = aluguel + parcela_contrato
+            acumulado += total_mes
+
             parcelas.append({
                 "mes": mes,
                 "descricao": f"Mês {mes:02d}",
                 "aluguel": aluguel,
+                "parcela_contrato": parcela_contrato,
+                "total_mes": total_mes,
+                "acumulado": acumulado,
             })
 
         return parcelas
@@ -113,24 +131,24 @@ class Orcamento:
             f"Orçamento R.M Imobiliária\n"
             f"Cliente: {self._nome_cliente}\n"
             f"Imóvel: {self._imovel}\n"
-            f"Aluguel Mensal: R$ {aluguel:,.2f}\n"
-            f"Total 12 meses: R$ {self.valor_total_12_meses():,.2f}\n"
+            f"Aluguel Mensal: {formatar_moeda(aluguel)}\n"
+            f"Total 12 meses: {formatar_moeda(self.valor_total_12_meses())}\n"
             f"Contrato: {self._contrato}"
         )
 
 
 class ExportadorCSV:
     """
-    Exporta o orçamento para um arquivo CSV.
+    Exporta o orçamento para um arquivo CSV formatado e profissional.
 
-    O arquivo gerado contém as 12 parcelas mensais com
-    detalhes do aluguel para cada mês.
+    O arquivo é gerado no formato PT-BR (delimitado por ponto e vírgula ';',
+    com codificação UTF-8 com BOM) para abertura perfeita no Microsoft Excel.
     """
 
     @staticmethod
     def exportar(orcamento: Orcamento, caminho: str = None) -> str:
         """
-        Exporta o orçamento para um arquivo .csv.
+        Exporta o orçamento para um arquivo .csv altamente estruturado.
 
         Args:
             orcamento: Instância de Orcamento a ser exportada.
@@ -147,44 +165,95 @@ class ExportadorCSV:
 
         resumo = orcamento.resumo()
         parcelas = resumo["parcelas"]
+        div = "=" * 80
 
         with open(caminho, mode="w", newline="", encoding="utf-8-sig") as arquivo:
             escritor = csv.writer(arquivo, delimiter=";")
 
-            # Cabeçalho com informações do orçamento
-            escritor.writerow(["ORÇAMENTO R.M IMOBILIÁRIA"])
-            escritor.writerow(["Cliente", resumo["cliente"]])
-            escritor.writerow(["Data", resumo["data"]])
-            escritor.writerow(["Tipo de Imóvel", resumo["imovel_tipo"]])
-            escritor.writerow(["Quartos", resumo["imovel_quartos"]])
-            escritor.writerow(["Garagem/Estacionamento", "Sim" if resumo["imovel_garagem"] else "Não"])
+            # ----------------------------------------------------
+            # CABEÇALHO DO RELATÓRIO
+            # ----------------------------------------------------
+            escritor.writerow(["R.M IMOBILIÁRIA — RELATÓRIO DE ORÇAMENTO DE LOCAÇÃO", "", "", "", "", ""])
+            escritor.writerow([div, "", "", "", "", ""])
+            escritor.writerow(["Cliente:", resumo["cliente"], "", "Data de Emissão:", resumo["data"], ""])
+            escritor.writerow(["Tipo de Imóvel:", resumo["imovel_tipo"], "", "Quartos:", resumo["imovel_quartos"], ""])
+            escritor.writerow(["Garagem / Estacionamento:", "Sim" if resumo["imovel_garagem"] else "Não", "", "", "", ""])
             escritor.writerow([])
 
-            # Detalhamento do cálculo
-            escritor.writerow(["DETALHAMENTO DO CÁLCULO"])
+            # ----------------------------------------------------
+            # COMPOSIÇÃO DA MENSALIDADE
+            # ----------------------------------------------------
+            escritor.writerow(["1. COMPOSIÇÃO DO ALUGUEL MENSAL", "", "", "", "", ""])
+            escritor.writerow(["Item / Descrição", "Tipo", "Valor (R$)", "", "", ""])
+            escritor.writerow(["-" * 40, "-" * 15, "-" * 15, "", "", ""])
+
             for descricao, valor in resumo["detalhes_calculo"]:
-                escritor.writerow([descricao, f"R$ {valor:,.2f}"])
-            escritor.writerow(["ALUGUEL MENSAL", f"R$ {resumo['aluguel_mensal']:,.2f}"])
+                tipo_item = "Desconto" if valor < 0 else "Base/Adicional"
+                escritor.writerow([descricao, tipo_item, formatar_moeda(valor), "", "", ""])
+
+            escritor.writerow(["-" * 40, "-" * 15, "-" * 15, "", "", ""])
+            escritor.writerow(["VALOR FINAL DO ALUGUEL MENSAL", "MENSALIDADE", formatar_moeda(resumo["aluguel_mensal"]), "", "", ""])
             escritor.writerow([])
 
-            # Contrato
-            escritor.writerow(["CONTRATO IMOBILIÁRIO"])
-            escritor.writerow(["Valor Total", f"R$ {resumo['contrato_valor']:,.2f}"])
-            escritor.writerow(["Parcelas", f"{resumo['contrato_parcelas']}x de R$ {resumo['contrato_valor_parcela']:,.2f}"])
+            # ----------------------------------------------------
+            # CONTRATO IMOBILIÁRIO
+            # ----------------------------------------------------
+            escritor.writerow(["2. CONTRATO IMOBILIÁRIO (TAXA ÚNICA)", "", "", "", "", ""])
+            escritor.writerow(["Valor Total do Contrato:", formatar_moeda(resumo["contrato_valor"]), "", "", "", ""])
+            escritor.writerow(["Condição de Pagamento:", f"{resumo['contrato_parcelas']}x de {formatar_moeda(resumo['contrato_valor_parcela'])}", "", "", "", ""])
             escritor.writerow([])
 
-            # Tabela de 12 parcelas
-            escritor.writerow(["PARCELAS DO ORÇAMENTO (12 MESES)"])
-            escritor.writerow(["Mês", "Descrição", "Valor do Aluguel"])
+            # ----------------------------------------------------
+            # TABELA DE 12 PARCELAS (CRONOGRAMA FINANCEIRO)
+            # ----------------------------------------------------
+            escritor.writerow(["3. CRONOGRAMA FINANCEIRO DE PAGAMENTOS (12 MESES)", "", "", "", "", ""])
+            escritor.writerow([
+                "Mês",
+                "Descrição",
+                "Aluguel Mensal (R$)",
+                "Parcela Contrato (R$)",
+                "Total Mensal (R$)",
+                "Total Acumulado (R$)"
+            ])
+            escritor.writerow(["-" * 6, "-" * 15, "-" * 20, "-" * 20, "-" * 20, "-" * 20])
 
-            for parcela in parcelas:
+            total_aluguel = 0.0
+            total_contrato = 0.0
+            total_geral = 0.0
+
+            for p in parcelas:
+                total_aluguel += p["aluguel"]
+                total_contrato += p["parcela_contrato"]
+                total_geral += p["total_mes"]
+
                 escritor.writerow([
-                    parcela["mes"],
-                    parcela["descricao"],
-                    f"R$ {parcela['aluguel']:,.2f}",
+                    f"{p['mes']:02d}",
+                    p["descricao"],
+                    formatar_moeda(p["aluguel"]),
+                    formatar_moeda(p["parcela_contrato"]) if p["parcela_contrato"] > 0 else "R$ 0,00",
+                    formatar_moeda(p["total_mes"]),
+                    formatar_moeda(p["acumulado"])
                 ])
 
+            escritor.writerow(["-" * 6, "-" * 15, "-" * 20, "-" * 20, "-" * 20, "-" * 20])
+            escritor.writerow([
+                "TOTAL",
+                "12 Meses",
+                formatar_moeda(total_aluguel),
+                formatar_moeda(total_contrato),
+                formatar_moeda(total_geral),
+                formatar_moeda(total_geral)
+            ])
             escritor.writerow([])
-            escritor.writerow(["TOTAL 12 MESES", "", f"R$ {resumo['total_12_meses']:,.2f}"])
+
+            # ----------------------------------------------------
+            # RODAPÉ E NOTAS
+            # ----------------------------------------------------
+            escritor.writerow(["RESUMO GERAL DA LOCAÇÃO", "", "", "", "", ""])
+            escritor.writerow(["Total de Aluguel (12 meses):", formatar_moeda(total_aluguel), "", "", "", ""])
+            escritor.writerow(["Total do Contrato Imobiliário:", formatar_moeda(total_contrato), "", "", "", ""])
+            escritor.writerow(["INVESTIMENTO TOTAL NO PERÍODO (1 ANO):", formatar_moeda(total_geral), "", "", "", ""])
+            escritor.writerow([div, "", "", "", "", ""])
+            escritor.writerow(["Documento gerado automaticamente pelo Sistema R.M Imobiliária", "", "", "", "", ""])
 
         return caminho
