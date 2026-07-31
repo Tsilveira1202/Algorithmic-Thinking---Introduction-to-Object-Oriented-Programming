@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Gerador de Orçamento de Aluguel — R.M Imobiliária. Simule o valor do aluguel de apartamentos, casas e estúdios.">
+    <title>R.M Imobiliária — Orçamento de Aluguel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="container">
+
+    <!-- HEADER -->
+    <header class="header">
+        <span class="header__badge">Sistema de Locação</span>
+        <h1 class="header__title">R.M Imobiliária</h1>
+        <p class="header__subtitle">Gerador de Orçamento de Aluguel</p>
+    </header>
+
+    {% if not resultado %}
+    <!-- FORMULÁRIO -->
+    <form id="formOrcamento" method="POST" action="/gerar">
+
+        <!-- Nome do Cliente -->
+        <section class="card">
+            <h2 class="card__title">Dados do Cliente</h2>
+            <div class="form-group">
+                <label for="nome_cliente">Nome completo</label>
+                <input type="text" id="nome_cliente" name="nome_cliente" placeholder="Digite o nome do cliente" required>
+            </div>
+        </section>
+
+        <!-- Tipo de Imóvel -->
+        <section class="card">
+            <h2 class="card__title">Tipo de Imóvel</h2>
+            <div class="tipo-grid">
+                <div class="tipo-option">
+                    <input type="radio" id="tipo_apartamento" name="tipo_imovel" value="apartamento" checked>
+                    <label for="tipo_apartamento">
+                        <span class="tipo-option__name">Apartamento</span>
+                        <span class="tipo-option__price">a partir de R$ 700/mês</span>
+                    </label>
+                </div>
+                <div class="tipo-option">
+                    <input type="radio" id="tipo_casa" name="tipo_imovel" value="casa">
+                    <label for="tipo_casa">
+                        <span class="tipo-option__name">Casa</span>
+                        <span class="tipo-option__price">a partir de R$ 900/mês</span>
+                    </label>
+                </div>
+                <div class="tipo-option">
+                    <input type="radio" id="tipo_estudio" name="tipo_imovel" value="estudio">
+                    <label for="tipo_estudio">
+                        <span class="tipo-option__name">Estúdio</span>
+                        <span class="tipo-option__price">R$ 1.200/mês</span>
+                    </label>
+                </div>
+            </div>
+        </section>
+
+        <!-- Configurações -->
+        <section class="card">
+            <h2 class="card__title">Configurações do Imóvel</h2>
+
+            <!-- Quartos -->
+            <div id="secaoQuartos" class="form-group">
+                <label for="quartos">Número de quartos</label>
+                <select id="quartos" name="quartos">
+                    <option value="1">1 Quarto</option>
+                    <option value="2">2 Quartos</option>
+                </select>
+            </div>
+
+            <!-- Toggles lado a lado -->
+            <div class="toggle-row">
+                <!-- Garagem -->
+                <div id="secaoGaragem" class="toggle-group">
+                    <div class="toggle-group__label">
+                        <span class="toggle-group__title">Vaga de Garagem</span>
+                        <span class="toggle-group__desc">+ R$ 300,00/mês</span>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="garagem" name="garagem" value="sim">
+                        <span class="toggle__slider"></span>
+                    </label>
+                </div>
+
+                <!-- Crianças (apenas Apartamento) -->
+                <div id="secaoCriancas" class="toggle-group">
+                    <div class="toggle-group__label">
+                        <span class="toggle-group__title">Possui Crianças?</span>
+                        <span class="toggle-group__desc">Sem crianças = 5% desconto</span>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="tem_criancas" name="tem_criancas" value="sim">
+                        <span class="toggle__slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Estacionamento (apenas Estúdio) -->
+            <div class="toggle-row">
+                <div id="secaoEstacionamento" class="toggle-group toggle-group--full" style="display: none;">
+                    <div class="toggle-group__label">
+                        <span class="toggle-group__title">Pacote Estacionamento</span>
+                        <span class="toggle-group__desc">R$ 250,00/mês (2 vagas inclusas)</span>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="estacionamento" name="estacionamento" value="sim">
+                        <span class="toggle__slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Vagas extras -->
+            <div id="secaoVagasExtras" class="condicional">
+                <div class="form-group">
+                    <label for="vagas_extras">Vagas extras (R$ 60,00 cada)</label>
+                    <input type="number" id="vagas_extras" name="vagas_extras" min="0" max="10" value="0">
+                </div>
+            </div>
+        </section>
+
+        <!-- Contrato -->
+        <section class="card">
+            <h2 class="card__title">Contrato Imobiliário</h2>
+            <div class="form-group">
+                <label for="parcelas_contrato">Parcelamento do contrato (R$ 2.000,00)</label>
+                <select id="parcelas_contrato" name="parcelas_contrato">
+                    <option value="1">À vista (1x de R$ 2.000,00)</option>
+                    <option value="2">2x de R$ 1.000,00</option>
+                    <option value="3">3x de R$ 666,67</option>
+                    <option value="4">4x de R$ 500,00</option>
+                    <option value="5">5x de R$ 400,00</option>
+                </select>
+            </div>
+        </section>
+
+        <button type="submit" class="btn btn--primary" id="btnGerar">
+            Gerar Orçamento
+        </button>
+    </form>
+
+    {% else %}
+    <!-- RESULTADO -->
+    <div class="resultado">
+
+        <!-- Valor Principal -->
+        <section class="card">
+            <div class="resultado__valor-principal">
+                <div class="resultado__label">Aluguel Mensal</div>
+                <div class="resultado__valor">
+                    R$ {{ "%.2f"|format(resultado.aluguel_mensal) }}
+                    <small>/mês</small>
+                </div>
+            </div>
+
+            <h2 class="card__title">Detalhamento — {{ resultado.imovel_tipo }}</h2>
+
+            <p class="resultado__meta">
+                Cliente: {{ resultado.cliente }} &nbsp;|&nbsp;
+                Data: {{ resultado.data }}
+            </p>
+
+            <ul class="detalhe-lista">
+                {% for descricao, valor in resultado.detalhes_calculo %}
+                <li class="detalhe-item">
+                    <span class="detalhe-item__label">{{ descricao }}</span>
+                    {% if valor < 0 %}
+                    <span class="detalhe-item__valor detalhe-item__valor--negativo">
+                        - R$ {{ "%.2f"|format(valor|abs) }}
+                    </span>
+                    {% else %}
+                    <span class="detalhe-item__valor detalhe-item__valor--positivo">
+                        + R$ {{ "%.2f"|format(valor) }}
+                    </span>
+                    {% endif %}
+                </li>
+                {% endfor %}
+                <li class="detalhe-item detalhe-item--total">
+                    <span>Total Mensal</span>
+                    <span>R$ {{ "%.2f"|format(resultado.aluguel_mensal) }}</span>
+                </li>
+            </ul>
+        </section>
+
+        <!-- Contrato -->
+        <section class="card">
+            <h2 class="card__title">Contrato Imobiliário</h2>
+            <div class="contrato-info">
+                <div class="contrato-info__item">
+                    <div class="contrato-info__valor">R$ {{ "%.2f"|format(resultado.contrato_valor) }}</div>
+                    <div class="contrato-info__label">Valor Total</div>
+                </div>
+                <div class="contrato-info__item">
+                    <div class="contrato-info__valor">{{ resultado.contrato_parcelas }}x</div>
+                    <div class="contrato-info__label">Parcelas</div>
+                </div>
+                <div class="contrato-info__item">
+                    <div class="contrato-info__valor">R$ {{ "%.2f"|format(resultado.contrato_valor_parcela) }}</div>
+                    <div class="contrato-info__label">Valor Parcela</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 12 parcelas -->
+        <section class="card">
+            <h2 class="card__title">Parcelas do Orçamento — 12 Meses</h2>
+            <table class="parcelas-table">
+                <thead>
+                    <tr>
+                        <th>Mês</th>
+                        <th>Descrição</th>
+                        <th>Valor do Aluguel</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for parcela in resultado.parcelas %}
+                    <tr>
+                        <td>{{ parcela.mes }}</td>
+                        <td>{{ parcela.descricao }}</td>
+                        <td class="valor-cell">R$ {{ "%.2f"|format(parcela.aluguel) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <ul class="detalhe-lista">
+                <li class="detalhe-item detalhe-item--total">
+                    <span>Total 12 Meses</span>
+                    <span>R$ {{ "%.2f"|format(resultado.total_12_meses) }}</span>
+                </li>
+            </ul>
+        </section>
+
+        <a href="/exportar_csv" class="btn btn--primary">
+            Exportar Orçamento (.csv)
+        </a>
+        <a href="/" class="btn btn--outline">
+            Novo Orçamento
+        </a>
+    </div>
+    {% endif %}
+
+    <footer class="footer">
+        <p>R.M Imobiliária — Sistema de Orçamento de Aluguel</p>
+    </footer>
+
+</div>
+
+<!-- JavaScript -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const radios = document.querySelectorAll('input[name="tipo_imovel"]');
+        const secaoQuartos = document.getElementById('secaoQuartos');
+        const secaoGaragem = document.getElementById('secaoGaragem');
+        const secaoCriancas = document.getElementById('secaoCriancas');
+        const secaoEstacionamento = document.getElementById('secaoEstacionamento');
+        const secaoVagasExtras = document.getElementById('secaoVagasExtras');
+        const estacionamentoCheck = document.getElementById('estacionamento');
+
+        if (!radios.length) return;
+
+        function atualizarCampos() {
+            const tipo = document.querySelector('input[name="tipo_imovel"]:checked').value;
+
+            if (tipo === 'apartamento') {
+                secaoQuartos.style.display = 'block';
+                secaoGaragem.style.display = 'flex';
+                secaoCriancas.style.display = 'flex';
+                secaoEstacionamento.style.display = 'none';
+                secaoVagasExtras.classList.remove('visivel');
+            } else if (tipo === 'casa') {
+                secaoQuartos.style.display = 'block';
+                secaoGaragem.style.display = 'flex';
+                secaoCriancas.style.display = 'none';
+                secaoEstacionamento.style.display = 'none';
+                secaoVagasExtras.classList.remove('visivel');
+            } else {
+                secaoQuartos.style.display = 'none';
+                secaoGaragem.style.display = 'none';
+                secaoCriancas.style.display = 'none';
+                secaoEstacionamento.style.display = 'flex';
+                atualizarVagasExtras();
+            }
+        }
+
+        function atualizarVagasExtras() {
+            if (estacionamentoCheck && estacionamentoCheck.checked) {
+                secaoVagasExtras.classList.add('visivel');
+            } else {
+                secaoVagasExtras.classList.remove('visivel');
+            }
+        }
+
+        radios.forEach(r => r.addEventListener('change', atualizarCampos));
+        if (estacionamentoCheck) {
+            estacionamentoCheck.addEventListener('change', atualizarVagasExtras);
+        }
+
+        atualizarCampos();
+    });
+</script>
+
+</body>
+</html>

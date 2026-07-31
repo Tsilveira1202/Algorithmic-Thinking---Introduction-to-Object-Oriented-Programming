@@ -1,0 +1,550 @@
+/* =============================================
+   R.M Imobiliária — Orçamento de Aluguel
+   ============================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary: #1a7a5c;
+    --primary-light: #22976f;
+    --primary-dark: #145e47;
+    --accent: #c8944a;
+    --accent-light: #dab06e;
+
+    --bg-dark: #101214;
+    --bg-surface: #181a1e;
+    --bg-card: #1e2126;
+    --bg-card-hover: #252830;
+    --bg-input: #14161a;
+
+    --text-primary: #e8e6e1;
+    --text-secondary: #9b9a97;
+    --text-muted: #5e5d5a;
+
+    --border: #2a2d32;
+    --border-focus: rgba(26, 122, 92, 0.6);
+
+    --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+
+    --transition: 0.2s ease;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: var(--bg-dark);
+    color: var(--text-primary);
+    min-height: 100vh;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* --- Layout --- */
+.container {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 2.5rem 2rem 4rem;
+}
+
+/* --- Header --- */
+.header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.header__badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--primary-light);
+    background: rgba(26, 122, 92, 0.12);
+    border: 1px solid rgba(26, 122, 92, 0.25);
+    padding: 0.3rem 0.9rem;
+    border-radius: 20px;
+    margin-bottom: 1rem;
+}
+
+.header__title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+    margin-bottom: 0.35rem;
+}
+
+.header__subtitle {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    font-weight: 400;
+}
+
+/* --- Cards --- */
+.card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.75rem 2rem;
+    margin-bottom: 1.25rem;
+    transition: border-color var(--transition);
+}
+
+.card:hover {
+    border-color: #363940;
+}
+
+.card__title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-bottom: 1.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-secondary);
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+}
+
+/* --- Tipo de Imóvel --- */
+.tipo-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+}
+
+.tipo-option {
+    position: relative;
+}
+
+.tipo-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.tipo-option label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    padding: 1.25rem 1rem;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition);
+    text-align: center;
+}
+
+.tipo-option label:hover {
+    background: var(--bg-card-hover);
+    border-color: #3a3d44;
+}
+
+.tipo-option input[type="radio"]:checked + label {
+    background: rgba(26, 122, 92, 0.08);
+    border-color: var(--primary);
+}
+
+.tipo-option__name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+}
+
+.tipo-option__price {
+    font-size: 0.78rem;
+    color: var(--accent);
+    font-weight: 500;
+}
+
+/* --- Form --- */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 0.4rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.form-group select,
+.form-group input[type="text"],
+.form-group input[type="number"] {
+    width: 100%;
+    padding: 0.7rem 0.9rem;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    transition: border-color var(--transition);
+    outline: none;
+}
+
+.form-group select:focus,
+.form-group input:focus {
+    border-color: var(--border-focus);
+}
+
+.form-group select option {
+    background: var(--bg-card);
+    color: var(--text-primary);
+}
+
+/* --- Toggle --- */
+.toggle-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.toggle-group {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 1rem;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    transition: border-color var(--transition);
+}
+
+.toggle-group--full {
+    grid-column: 1 / -1;
+}
+
+.toggle-group:hover {
+    border-color: #3a3d44;
+}
+
+.toggle-group__label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+.toggle-group__title {
+    font-weight: 600;
+    font-size: 0.88rem;
+}
+
+.toggle-group__desc {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.toggle {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle__slider {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 24px;
+    cursor: pointer;
+    transition: background var(--transition);
+}
+
+.toggle__slider::before {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    left: 3px;
+    top: 3px;
+    background: var(--text-secondary);
+    border-radius: 50%;
+    transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+                background var(--transition);
+}
+
+.toggle input:checked + .toggle__slider {
+    background: var(--primary);
+}
+
+.toggle input:checked + .toggle__slider::before {
+    transform: translateX(20px);
+    background: #fff;
+}
+
+/* --- Campos condicionais --- */
+.condicional {
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    transition: max-height 0.35s ease, opacity 0.25s ease;
+}
+
+.condicional.visivel {
+    max-height: 300px;
+    opacity: 1;
+    margin-top: 0.75rem;
+}
+
+/* --- Botões --- */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.8rem 1.5rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--transition);
+    text-decoration: none;
+}
+
+.btn--primary {
+    width: 100%;
+    background: var(--primary);
+    color: #fff;
+}
+
+.btn--primary:hover {
+    background: var(--primary-light);
+}
+
+.btn--outline {
+    width: 100%;
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    margin-top: 0.6rem;
+}
+
+.btn--outline:hover {
+    background: rgba(200, 148, 74, 0.08);
+}
+
+/* --- Resultado --- */
+.resultado__valor-principal {
+    text-align: center;
+    padding: 2rem;
+    background: var(--bg-surface);
+    border-radius: var(--radius-md);
+    margin-bottom: 1.75rem;
+    border: 1px solid var(--border);
+}
+
+.resultado__label {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+}
+
+.resultado__valor {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--primary-light);
+    line-height: 1.2;
+}
+
+.resultado__valor small {
+    font-size: 1rem;
+    font-weight: 400;
+    color: var(--text-secondary);
+}
+
+.resultado__meta {
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+    font-size: 0.85rem;
+}
+
+/* --- Lista de detalhes --- */
+.detalhe-lista {
+    list-style: none;
+}
+
+.detalhe-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.65rem 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9rem;
+}
+
+.detalhe-item:last-child {
+    border-bottom: none;
+}
+
+.detalhe-item__label {
+    color: var(--text-secondary);
+}
+
+.detalhe-item__valor {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.detalhe-item__valor--positivo {
+    color: var(--primary-light);
+}
+
+.detalhe-item__valor--negativo {
+    color: #d45555;
+}
+
+.detalhe-item--total {
+    border-top: 2px solid var(--primary-dark);
+    border-bottom: none;
+    padding-top: 0.85rem;
+    margin-top: 0.4rem;
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+/* --- Contrato --- */
+.contrato-info {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.contrato-info__item {
+    text-align: center;
+    padding: 0.9rem;
+    background: var(--bg-input);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+}
+
+.contrato-info__valor {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 0.15rem;
+}
+
+.contrato-info__label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* --- Tabela --- */
+.parcelas-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 0.75rem;
+}
+
+.parcelas-table th {
+    text-align: left;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    border-bottom: 2px solid var(--border);
+}
+
+.parcelas-table td {
+    padding: 0.55rem 0.75rem;
+    font-size: 0.85rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-secondary);
+}
+
+.parcelas-table tr:last-child td {
+    border-bottom: none;
+}
+
+.parcelas-table tr:hover td {
+    background: rgba(26, 122, 92, 0.03);
+}
+
+.parcelas-table .valor-cell {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* --- Footer --- */
+.footer {
+    text-align: center;
+    padding: 1.5rem 0;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    border-top: 1px solid var(--border);
+    margin-top: 2.5rem;
+}
+
+/* --- Responsivo --- */
+@media (max-width: 700px) {
+    .container {
+        padding: 1.5rem 1rem 3rem;
+    }
+
+    .tipo-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-row,
+    .toggle-row {
+        grid-template-columns: 1fr;
+    }
+
+    .contrato-info {
+        grid-template-columns: 1fr;
+    }
+
+    .resultado__valor {
+        font-size: 2rem;
+    }
+
+    .card {
+        padding: 1.25rem;
+    }
+}
