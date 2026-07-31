@@ -35,6 +35,15 @@ def index():
     return render_template("index.html", resultado=None)
 
 
+@app.route("/favicon.ico")
+def favicon():
+    """
+    Evita erro 404 no log do servidor quando o navegador busca o favicon.
+    """
+    return "", 204
+
+
+
 @app.route("/gerar", methods=["POST"])
 def gerar_orcamento():
     """
