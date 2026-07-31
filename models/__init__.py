@@ -3,4 +3,4 @@
 
 from models.imovel import Imovel, Apartamento, Casa, Estudio
 from models.contrato import Contrato
-from models.orcamento import Orcamento, ExportadorCSV
+from models.orcamento import Orcamento, ExportadorCSV, ExportadorExcel

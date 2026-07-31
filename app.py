@@ -5,9 +5,10 @@ Servidor Flask que gerencia as rotas da aplicação
 de orçamento de aluguel.
 
 Rotas:
-    GET  /              → Formulário de orçamento
-    POST /gerar         → Processa formulário e exibe resultado
-    GET  /exportar_csv  → Download do arquivo CSV com 12 parcelas
+    GET  /                → Formulário de orçamento
+    POST /gerar           → Processa formulário e exibe resultado
+    GET  /exportar_excel  → Download de planilha Excel estilizada (.xlsx)
+    GET  /exportar_csv    → Download do arquivo CSV com 12 parcelas
 """
 
 import os
@@ -15,7 +16,7 @@ from flask import Flask, render_template, request, send_file, session
 
 from models.imovel import Apartamento, Casa, Estudio
 from models.contrato import Contrato
-from models.orcamento import Orcamento, ExportadorCSV
+from models.orcamento import Orcamento, ExportadorCSV, ExportadorExcel
 
 
 # --- Inicialização do Flask ---
@@ -23,7 +24,6 @@ app = Flask(__name__)
 app.secret_key = "rm_imobiliaria_2025"
 
 # Variável global para manter o último orçamento gerado
-# (utilizada para exportação CSV)
 ultimo_orcamento = None
 
 
@@ -43,15 +43,10 @@ def favicon():
     return "", 204
 
 
-
 @app.route("/gerar", methods=["POST"])
 def gerar_orcamento():
     """
     Processa o formulário e gera o orçamento.
-
-    Recebe os dados do formulário, cria as instâncias
-    das classes (Imóvel, Contrato, Orçamento) e retorna
-    o resultado para o template.
     """
     global ultimo_orcamento
 
@@ -93,7 +88,7 @@ def gerar_orcamento():
         nome_cliente=nome_cliente
     )
 
-    # Armazena para exportação CSV
+    # Armazena para exportação
     ultimo_orcamento = orcamento
 
     # --- 5. Envia o resumo para o template ---
@@ -102,18 +97,42 @@ def gerar_orcamento():
     return render_template("index.html", resultado=resultado)
 
 
-@app.route("/exportar_csv")
-def exportar_csv():
+@app.route("/exportar_excel")
+def exportar_excel():
     """
-    Exporta o último orçamento gerado para um arquivo CSV
-    e retorna para download.
+    Exporta o orçamento para uma planilha Excel (.xlsx) altamente estilizada,
+    com cores corporativas, fontes, bordas e fórmulas nativas.
     """
     global ultimo_orcamento
 
     if ultimo_orcamento is None:
         return "Nenhum orçamento foi gerado ainda. Volte e gere um orçamento primeiro.", 400
 
-    # Gera o CSV na raiz do projeto
+    caminho_xlsx = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        "orcamento.xlsx"
+    )
+
+    ExportadorExcel.exportar(ultimo_orcamento, caminho_xlsx)
+
+    return send_file(
+        caminho_xlsx,
+        as_attachment=True,
+        download_name="orcamento_rm_imobiliaria.xlsx",
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
+
+@app.route("/exportar_csv")
+def exportar_csv():
+    """
+    Exporta o último orçamento gerado para um arquivo CSV (.csv).
+    """
+    global ultimo_orcamento
+
+    if ultimo_orcamento is None:
+        return "Nenhum orçamento foi gerado ainda. Volte e gere um orçamento primeiro.", 400
+
     caminho_csv = os.path.join(
         os.path.dirname(os.path.abspath(__file__)),
         "orcamento.csv"

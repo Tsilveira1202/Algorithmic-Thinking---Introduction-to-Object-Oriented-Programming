@@ -234,12 +234,17 @@
             </ul>
         </section>
 
-        <a href="/exportar_csv" class="btn btn--primary">
-            Exportar Orçamento (.csv)
-        </a>
-        <a href="/" class="btn btn--outline">
-            Novo Orçamento
-        </a>
+        <div class="action-row" style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            <a href="/exportar_excel" class="btn btn--primary" style="flex: 2; min-width: 240px;">
+                Exportar Planilha Excel (.xlsx)
+            </a>
+            <a href="/exportar_csv" class="btn btn--outline" style="flex: 1; margin-top: 0; min-width: 180px;">
+                Exportar CSV (.csv)
+            </a>
+            <a href="/" class="btn btn--outline" style="flex: 1; margin-top: 0; min-width: 180px;">
+                Novo Orçamento
+            </a>
+        </div>
     </div>
     {% endif %}
 
